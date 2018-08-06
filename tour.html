@@ -1,0 +1,92 @@
+<html>
+
+<script type="text/javascript" src="morphdom.js"></script>
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="bootstrap-tour-standalonev11.js"></script>
+
+
+<link href="bootstrap-tour-standalone.css" rel="stylesheet">
+<body>
+
+    <h1>Hello world</h1>
+
+    <div id="app">
+        this will be the app
+    </div>
+
+    <div id="my-element">asdjkahsdfkjasd MY ELEMENT 1</div>
+<div id="my-other-element">asdjkahsdfkjasd MY ELEMENT 1</div>
+
+
+
+    <script type="text/javascript">
+
+myTour = new Tour({orphan: true, backdrop: true, 
+
+ template: function(i, step) {
+ 	console.log('request', i);
+
+
+if (i == 2) {
+
+
+	return `<div class='popover tour'>
+<div class='arrow'></div>
+<div class="onboarding--block onboarding--complete">
+<a href="#" class="onboarding--block__close" data-role="end"></a>
+<div class="onboarding--content">
+<h4>Nice job! You’ve just gone through the basics of your calendar.</h5>
+<p>To be as successful as possible, we recommend you check your calendar and prices regularly.</p>
+</div>
+<div class="onboarding--content-nav">
+<a href="#" class="btn btn-primary" data-role="end">Got it</a>
+</div>
+</div>
+</div>`;
+}
+ 	return `<div class='popover tour'>
+    <div class='arrow'></div>
+    <h3 class='popover-title'></h3>
+    <div class='popover-content'></div>
+    <div class='popover-navigation'>
+        <button class='btn btn-default' data-role='prev'>« Prev</button>
+        <span data-role='separator'>|</span>
+        <button class='btn btn-default' data-role='next'>Next »</button>
+    </div>
+    <button class='btn btn-default' data-role='end'>End tour</button>
+  </div>`;
+
+
+
+
+ },
+
+
+	steps: [
+
+
+  {
+    title: "Title of my step",
+    content: "Content of my step"
+  },
+
+  {
+    element: "#my-other-element",
+    title: "Title of my step",
+    content: "Content of my step"
+  },
+        {
+          title: 'Orphan step',
+          content: 'This step is not associated with any element.'
+        }
+      ]});
+     
+      myTour.init();
+      myTour.start();
+
+      
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,211 @@
+<html>
+
+<script type="text/javascript" src="morphdom.js"></script>
+<script type="text/javascript" src="handlebars-v4.0.11.js"></script>
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<body>
+
+    <h1>Hello world</h1>
+
+    <div id="app">
+        this will be the app
+    </div>
+
+
+
+    <script type="text/javascript">
+        /* currently unsanswered questions
+
+            how to pass data down to components as the template enging does not know about the JS structure of you app
+            data structure and dom structure have to be handled by the same framework, as they are coupled.
+            Decoupling them does not work (only if they do NOT share any state at all)
+        */
+        var renderApp = function(ctx) {
+            
+            return `
+            <div>
+                hello no template enginge
+                <button data-on-click="myFn(1, event)">Increment</button>
+                <div>body:` + ctx.body + ` updated: ` + ctx.counter + `</div>
+                component?
+
+                <div><comp 
+
+                ` + ((ctx.counter % 2 == 0) ? `Yes` : ` no`) + `>inside</comp></div>
+                <div><comp>inside</comp></div>
+                another?
+
+                ` + ((ctx.counter % 2 == 0) ? `Yes` : ` no`) + `
+
+                ` + ((ctx.counter % 2 == 0) ? `<div><comp>inside</comp></div>` : ``) + `
+            </div>
+            `;  
+
+        }
+
+        var renderComponent = function(ctx, props) {
+            with(ctx) {
+                return `
+                <div>
+                    component life is cool
+                    ` + props.count + `
+                    parentCounter: ` + props.parentCounter + `
+                    <button data-on-click="increment()">Increment the component</button>
+                </div>
+                `;  
+            }
+
+        }
+
+
+        var myComponent = function(el) {
+            var state = {};
+            var props = {count: 0, parentCounter: 0};
+            var self = this;
+            render();
+            init();
+
+            var functions = {
+
+                increment: function() {
+                    props.count++;
+                    render();
+                }
+            }
+            setInterval(function() {
+                props.count++;
+                render();
+            }, 50);
+
+            function render() {
+                var html = renderComponent(state, props);
+                morphdom(el, "<div>" + html + "</div>", morphdomCallbacks);
+            }
+
+            function init() {
+                
+                console.log('this', this)
+                $(el).on('click', '[data-on-click]', function(event) {
+                    console.log('event', event);
+                    var fn = $(this).data('on-click');
+                    console.log('attribute', fn);
+                    
+                    
+                    _eval.call(self, fn);
+                });
+            }
+            function _eval(functionName) {
+                console.log('called _eval with', this);
+                //functions.increment(a)
+                eval('functions.' + functionName);
+                var ret = eval('this');
+                console.log('ret', ret);
+            }
+
+            function update(newState) {
+                state = newState;
+                state.parentCounter++;
+                console.log('component got the new context', newState);
+                render();   
+
+            }
+
+            return {
+                update: update
+            }
+        }
+
+        var componentCounter = 0;
+        var compInstances = {};
+        var morphdomCallbacks = {
+            childrenOnly: true,
+            onNodeAdded: function(node) {
+                //console.log('add node', node);
+                //console.log(node.tagName)
+                if (node.tagName == "COMP") {
+                    var key = 'component' + componentCounter;
+                    node.componentId = key;
+                    compInstances[key] = new myComponent(node); 
+                    console.log('will add a component ' + key);
+                    componentCounter++;
+                    
+                }
+            },
+
+onBeforeNodeAdded: function(node) {
+        console.log('want to add note', node);
+        //console.trace();
+        return node;
+    },
+ getNodeKey: function(node) {
+    var id = node.id;
+    if (id) console.log('id', id);
+        return id;
+    },
+            onBeforeElChildrenUpdated: function(fromEl, toEl) {
+                console.log('update  children from' + fromEl.tagName + ' to ' + toEl.tagName);
+                return true;
+            },
+
+            onElUpdated: function(el) {
+                console.log('onElUpdated', el);
+            },
+
+            onBeforeElUpdated: function(fromEl, toEl) {
+                if (fromEl.tagName == 'COMP') {
+                    console.warn('you should update', fromEl);
+                    var key = fromEl.componentId;
+console.log('key', key)
+                    compInstances[key].update(context);
+                    return false;// todo actually update this node
+                }
+                console.log('update EL from' + fromEl.tagName + ' to ' + toEl.tagName);
+                return true;
+            },
+
+            onBeforeNodeDiscarded: function(node) {
+                return true;
+            },
+
+        };
+
+        var $app = document.getElementById('app');
+
+        var functions = {
+            myFn: function(nr, event) {
+                console.log('nr' + nr);
+                console.log('event', event);
+                event.stopPropagation();
+                render();
+            }
+
+        };
+
+        $($app).on('click', '[data-on-click]', function(event) {
+            console.log('event', event);
+            var fn = $(this).data('on-click');
+            console.log('attribute', fn);
+            try {
+                eval('functions.' + fn);
+            } catch(e) {
+                console.log('error', e)
+            }
+        });
+
+        var counter = 0;
+        var context = {title: "My New Post", body: "This is my first post!", counter: counter};
+
+        function render() {
+            context.counter++;
+            var html = renderApp(context);
+
+            morphdom($app, "<div>" + html + "</div>", morphdomCallbacks);
+
+        }
+        render();
+      
+    </script>
+
+
+</body>
+</html>
