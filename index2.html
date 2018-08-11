@@ -12,7 +12,8 @@
         this will be the app
     </div>
 
-
+I CAN initialise the components seperately, butmultiple of one kind will casue a clash as they might share some same context
+my solutin is to save the object and reinitialise on every compoenent creation
 
     <script type="text/javascript">
         /* currently unsanswered questions
@@ -28,62 +29,64 @@
                 count: 0,
                 parentCounter: 0
             };
-            var methods = comp.methods;
+            var _el;
+
+            this.dispatch = function(action) {
+                console.log("YEAASASD dispatch");
+
+                state.count += action;
+                render();
+            };  
+
+            this.getState = function() {
+                return state;
+            };
+
+            this.methods = {};
+            this.methods.increment = comp.methods.increment(this.dispatch, this.getState);
+
+
+
             var self = this;
             this.state = {a:6};
+            
             function init() {
 
             }
 
-
-
-            
-            //var increment = comp.methods.increment2.bind(this);
-           //console.log(increment);
-
-
-            function render(el) {
+            function render() {
                 //var html = renderComponent(state, props);
-                console.log('el', el);
+                console.log('el', _el);
 
-                morphdom(el, "<div>" + comp.render(state) + "</div>", {
+                morphdom(_el, "<div>" + comp.render(state) + "</div>", {
                     childrenOnly: true
                 });
             }
+
+            
 
             function update(newState) {
                 state = newState;
                 state.parentCounter++;
                 console.log('component got the new context', newState);
-                render(el); 
+                render(); 
             }
-
-
 
             this._eval = function(functionName) {
                 console.log('called _eval with', this);
-                //functions.increment(a)
-               // eval('' + functionName );
-eval( functionName.replace(/\(([^)]*)\);?$/, '.call(this, $1);') );
-  
-                //this[functionName].apply()
-                //var ret = eval('this');
-                //console.log('ret', ret);
+                console.log('event', event);
+
+                var str = 'this.methods.' + functionName;
+                console.log('eva ',str)
+   
+                eval( str );
+
             }
 
-            function executeFunctionByName(functionName, context /*, args */) {
-              var args = Array.prototype.slice.call(arguments, 2);
-              var namespaces = functionName.split(".");
-              var func = namespaces.pop();
-              for(var i = 0; i < namespaces.length; i++) {
-                context = context[namespaces[i]];
-              }
-              return context[func].apply(context, args);
-            }
 
-            function bindEvents(el) {
+            function bindEvents() {
                 console.log('bind ev')
-                 $(el).on('click', '[data-on-click]', function(event) {
+                 $(_el).on('click', '[data-on-click]', function(event) {
                     console.log('event', event);
                     var fn = $(this).data('on-click');
                     console.log('attribute', fn);
@@ -91,9 +94,9 @@ eval( functionName.replace(/\(([^)]*)\);?$/, '.call(this, $1);') );
                         
 
 
-                           // self._eval(fn);
-                       // _eval.call(self, fn);
-                       _eval(fn)
+                           // _eval(fn, event);
+                        _eval.call(self, fn);
+                       //_eval(fn)
                     } catch(e) {
                         console.log('error', e)
                     }
@@ -101,12 +104,14 @@ eval( functionName.replace(/\(([^)]*)\);?$/, '.call(this, $1);') );
             }
 
             return function(el) {
-                console.log('initialise instance on ', el);
+                _el = el;
+                console.log('this', this)
+                console.log('initialise instance on ', _el);
 
                 init();
 
-                render(el);
-                bindEvents(el);
+                render();
+                bindEvents();
 
                  
 
@@ -117,32 +122,68 @@ eval( functionName.replace(/\(([^)]*)\);?$/, '.call(this, $1);') );
             }
         };
 
-        var myComponent2 = Component('comp2', {
+        function Component2(tag, obj) {
+            return Component(tag, obj);
+        }
+        var myComponent2 = Component2('comp2', {
             render: function(props) { 
                 return `
                 <div>
                     component life is cool
                     ` + props.count + `
                     parentCounter: ` + props.parentCounter + `
-                    <button data-on-click="increment(5,'hi,',8)">Increment the component</button>
+                    <button data-on-click="increment(event, 5, 'hi')">Increment the component</button>
                 </div>
             `},
             methods: {
-                increment2: function() {
-                    
-              
+                increment: function(dispatch, getState) {
+
+                    return function(event) {
+                        dispatch(5);
+                        console.log('state', getState());
+                        console.log('event', event);
                         console.log(this);
                         console.log(render);
+                    }
                     
                 }
             }
 
         });
 
+        var comp3Obj = {
+            render: function(props) { 
+                return `
+                <div>
+                    component life is cool
+                    ` + props.count + `
+                    parentCounter: ` + props.parentCounter + `
+                    <button data-on-click="increment(event, 5, 'hi')">Increment the component</button>
+                </div>
+            `},
+            methods: {
+                increment: function(dispatch, getState) {
+
+                    return function(event) {
+                        dispatch(5);
+                        console.log('state', getState());
+                        console.log('event', event);
+                        console.log(this);
+                        console.log(render);
+                    }
+                    
+                }
+            }
+
+        };
+        var myComponent3 = new Component('comp3', comp3Obj);
+
 
         var renderApp = function(ctx) {
             return `
-            <div><comp2></comp2></div>`;
+            <div><comp2></comp2></div>
+            <div><comp2></comp2></div>
+            <div><comp3></comp3></div>`;
 
             return `
             <div>
@@ -175,83 +216,14 @@ eval( functionName.replace(/\(([^)]*)\);?$/, '.call(this, $1);') );
                 </div>
                 `;  
             }
-
         }
-
-
-        var myComponent = function(el) {
-            var state = {};
-            var props = {count: 0, parentCounter: 0};
-            var self = this;
-            render();
-            init();
-
-            var functions = {
-
-                increment: function() {
-                    props.count++;
-                    render();
-                }
-            }
-            setInterval(function() {
-                props.count++;
-                render();
-            }, 500);
-
-            function render() {
-                var html = renderComponent(state, props);
-                morphdom(el, "<div>" + html + "</div>", {
-                    childrenOnly: true}
-                );
-            }
-
-            function init() {
-                
-                console.log('this', this)
-                $(el).on('click', '[data-on-click]', function(event) {
-                    console.log('event', event);
-                    var fn = $(this).data('on-click');
-                    console.log('attribute', fn);
-                    
-                    
-                    _eval.call(self, fn);
-                });
-            }
-            function _eval(functionName) {
-                console.log('called _eval with', this);
-                //functions.increment(a)
-                eval('functions.' + functionName);
-                var ret = eval('this');
-                console.log('ret', ret);
-            }
-
-            function update(newState) {
-                state = newState;
-                state.parentCounter++;
-                console.log('component got the new context', newState);
-                render();   
-
-            }
-
-            return {
-                update: update
-            }
-        }
-
-
-
-
-        //var html = renderComponent(state, props);
-        //morphdom(el, "<div>" + html + "</div>", morphdomCallbacks);
-    
-    
-       
 
 
         var componentCounter = 0;
         var compInstances = {};
-        var COMPONENTS = ['COMP', 'COMP2'];
-        var COMPONENT_CONSTR = {COMP: myComponent, COMP2: myComponent2};
+        var COMPONENTS = ['COMP2', 'COMP3'];
+        var COMPONENT_CONSTR = {COMP2: myComponent2, COMP3: myComponent3};
+        var COMPONENT_OBJ = {COMP2: comp3Obj, COMP3: comp3Obj};
 
         var morphdomCallbacks = {
             childrenOnly: true,
@@ -261,7 +233,9 @@ eval( functionName.replace(/\(([^)]*)\);?$/, '.call(this, $1);') );
                 if (COMPONENTS.indexOf(node.tagName) != -1) {
                     var key = node.tagName + componentCounter;
                     node.componentId = key;
-                    compInstances[key] = COMPONENT_CONSTR[node.tagName](node); 
+                    var comp = new Component(node.tagName, comp3Obj);
+                    compInstances[key] = new comp(node);
+                    //new COMPONENT_CONSTR[node.tagName](node); 
                     console.log('will add a component ' + key);
                     componentCounter++;
                 } 
@@ -315,17 +289,6 @@ console.log('key', key)
             }
 
         };
-/*
-        $($app).on('click', '[data-on-click]', function(event) {
-            console.log('event', event);
-            var fn = $(this).data('on-click');
-            console.log('attribute', fn);
-            try {
-                eval('functions.' + fn);
-            } catch(e) {
-                console.log('error', e)
-            }
-        });*/
 
         var counter = 0;
         var context = {title: "My New Post", body: "This is my first post!", counter: counter};
