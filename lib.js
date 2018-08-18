@@ -11,6 +11,7 @@ var Component = function(comp) {
     this.dispatch = function(action) {
         state = comp.reducer(state, action);
         console.log('got from reducer', state);
+
         render();
     }  
 
@@ -34,6 +35,7 @@ var Component = function(comp) {
     }
 
     function render() {
+        state = comp.viewLayer && comp.viewLayer(state);
         morphdom(_el, "<div>" + comp.render(state) + "</div>", morphdomCallbacks);
     }
 
@@ -64,7 +66,7 @@ var Component = function(comp) {
     }
 
     function bindEvents() {
-        var eventsToListen = ['click', 'change', 'keyup'];
+        var eventsToListen = ['click', 'change', 'keyup', 'submit', 'dblclick', 'blur'];
 
         eventsToListen.forEach(function(eventName) {
             $(_el).on(eventName, '[data-on-' + eventName + ']', function(event) {
@@ -126,7 +128,7 @@ var morphdomCallbacks = {
     },
     getNodeKey: function(node) {
         var id = node.id;
-        if (id) console.log('id', id);
+        //if (id) console.log('id', id);
         return id;
     },
     onBeforeElChildrenUpdated: function(fromEl, toEl) {

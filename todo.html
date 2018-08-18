@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en" data-framework="backbonejs">
+    <head>
+        <meta charset="utf-8">
+    </head>
+
+<script type="text/javascript" src="morphdom.js"></script>
+<script type="text/javascript" src="handlebars-v4.0.11.js"></script>
+<script type="text/javascript" src="lodash.min.js"></script>
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="lib.js"></script>
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="stylesheet" type="text/css" href="todo.css">
+<style>
+
+</style>
+<body>
+
+    <div id="app">
+        this will be the app
+    </div>
+
+    <script type="text/javascript">
+
+
+        var $app = document.getElementById('app');
+
+        var myApp = new Component({
+            state: {
+                filter: 'all',
+                tasks: [{
+                    name: 'nana',
+                    finished: false,
+                    editing: false
+                }, {
+                    name: "another task",
+                    finished: true,
+                    editing: false
+                }]
+            },
+            render: function(state) {
+                console.log('render', state);
+
+                var renderTask = function(task, index) {
+                    return `
+                    <li  ` + (task.editing ? ` class="editing"` : `` ) + `>
+                        <div class="view" data-on-dblclick="editTask(` + index + `)">
+
+                            <input class="toggle" type="checkbox"
+                                `+ (task.finished ? `checked` : ``)+ `
+                                data-on-change="toggleTaskFinish(` + index +`)">
+                            <label>` + task.name + `</label>
+
+                            <button class="destroy" data-on-click="clearTask(` + index + `)"></button>
+                        </div>
+                        <input class="edit" id="input-task-` + index + `" value="` + task.name + `" data-on-change="setTaskName(event, ` + index + `)" data-on-blur="stopEditing()" />
+                    </li>`
+                };
+
+                return `
+                <section class="todoapp">
+                    <header class="header">
+                        <h1>Todo</h1>
+                        <form data-on-submit="createTask(event)" action='#'>
+                            <input class="new-todo" name="taskName" placeholder="what needs to be done">
+                        </form>
+                    </header>
+                    <section class="main">
+                        <ul class="todo-list">
+                            ` + state.filteredTasks.map(renderTask).join('') + `
+                        </ul>
+                    </section>
+                    <footer class="footer">
+                        <span class="todo-count"><strong>` + state.vl.pendingTasks + `</strong> `
+                        + ((state.vl.pendingTasks == 1)? 'item': 'items') + ` left</span>
+
+                        <ul class="filters">
+                            <li>
+                                <a href='#' data-on-click="setFilter('all')"
+                                    `+ (state.filter == 'all' ? `class="selected"` : ``) + `>
+                                    All
+                                </a>
+                            </li>
+                            <li>
+                                <a href='#' data-on-click="setFilter('pending')"
+                                `+ (state.filter == 'pending' ? `class="selected"` : ``) + `>
+                                Active
+                                </a>
+                            </li>
+                            <li>
+                                <a href='#' data-on-click="setFilter('finished')"
+                                `+ (state.filter == 'finished' ? `class="selected"` : ``) + `>
+                                Completed
+                                </a>
+                            </li>
+                        </ul>
+
+                        <button class="clear-completed" data-on-click="clearCompleted()">
+                            Clear completed
+                        </button>
+                    </footer>
+                </section>`;
+            },
+
+            methods: {
+                createTask: function(dispatch, getState) {
+                    return function(event) {
+                        event.preventDefault();
+                        console.log('called methods', event);
+                        var val = event.target.taskName.value;
+                        event.target.taskName.value = '';
+                        dispatch({type: 'CREATE_TASK', payload: {
+                            name: val
+                        }});
+                    }
+                },
+                toggleTaskFinish: function(dispatch, getState) {
+                    return function(index) {
+                        dispatch({type: "TOGGLE_TASK_FINISH", payload: {index: index}});
+                        console.log('fnish task');
+                    }
+                },
+                clearCompleted: function(dispatch, getState) {
+                    return function() {
+                        dispatch({type: "CLEAR_COMPLETED", payload: {}});
+                    }
+                },
+                setFilter: function(dispatch, getState) {
+                    return function(filter) {
+                        dispatch({type: 'SET_FILTER', payload: {filter: filter}});
+                    }
+                },
+                clearTask: function(dispatch, getState) {
+                    return function(index) {
+                        dispatch({type: 'CLEAR_TASK', payload: {index: index}});
+                    }
+                },
+                editTask: function(dispatch, getState) {
+                    return function(index) {
+                        console.log('edittas', index);
+                        dispatch({type: 'EDIT_TASK', payload: {index: index}});
+                        $('#input-task-' + index).focus();
+                    }
+                },
+                setTaskName: function(dispatch, getState) {
+                    return function(event, index) {
+                        dispatch({type: 'SET_TASK_NAME', payload: {index: index, val: event.target.value}});
+                    }
+                },
+                stopEditing: function(dispatch, getState) {
+                    return function() {
+                        console.log('stopEditing');
+                        dispatch({type: 'STOP_EDITING'});
+                    }
+                }
+            },
+            viewLayer: function(state) {
+                var vl = {
+                    totalTaks: state.tasks.length,
+                    finishedTasks: 0,
+                    pendingTasks: 0
+                };
+                for (var i = 0; i < state.tasks.length; i++) {
+                    if (state.tasks[i].finished) {
+                        vl.finishedTasks++;
+                    } else {
+                        vl.pendingTasks++;
+                    }
+                }
+
+                var filteredTasks = [];
+                state.tasks.forEach(function(task) {
+                    if ((state.filter == 'pending' && !task.finished) ||
+                        (state.filter == 'finished' && task.finished) ||
+                        (state.filter != 'pending' && state.filter != 'finished')) {
+                        filteredTasks.push(task);
+                    }
+                })
+                state.filteredTasks = filteredTasks;
+                console.log('filter is', state.filter);
+                state.vl = vl;
+                return state;
+            },
+            reducer: function(state, action) {
+                console.log('got action', action);
+                switch (action.type) {
+                    case 'CREATE_TASK':
+                        state.tasks.push({
+                            name: action.payload.name,
+                            finished: false,
+                            editing: false
+                        });
+                        return state;
+                    case 'TOGGLE_TASK_FINISH':
+                        state.tasks[action.payload.index].finished = !state.tasks[action.payload.index].finished;
+                        //state.tasks.splice(action.payload.index, 1);
+                        return state;
+                    case 'CLEAR_COMPLETED':
+                        var newTasks = [];
+                        state.tasks.forEach(function(task) {
+                            if (!task.finished) {
+                                newTasks.push(task);
+                            }
+                        });
+                        state.tasks = newTasks;
+                        return state;
+                    case 'SET_FILTER':
+                        state.filter = action.payload.filter;
+                        return state;
+                    case 'CLEAR_TASK':
+                        state.tasks.splice(action.payload.index, 1);
+                        return state;
+                    case 'EDIT_TASK':
+                        console.log('dispatch editing');
+                        state.tasks[action.payload.index].editing = true;
+                        return state;
+                    case 'SET_TASK_NAME':
+                        state.tasks[action.payload.index].name = action.payload.val;
+                        state.tasks[action.payload.index].editing = false;
+                        return state;
+                    case 'STOP_EDITING':
+                        state.tasks.forEach(function(task) {
+                            task.editing = false;
+                        });
+                        return state;
+                }
+                return state;
+            }
+
+        })($app);
+
+
+
+    </script>
+
+
+</body>
+</html>
