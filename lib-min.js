@@ -8,12 +8,6 @@ var Component = function(comp) {
     var state = _.cloneDeep(comp.state);
     var _el;
 
-    this.dispatch = function(action) {
-        state = comp.reducer(state, action);
-        console.log('got from reducer', state);
-
-        render();
-    }
 
     this.getState = function() {
         return state;
@@ -23,14 +17,14 @@ var Component = function(comp) {
 
     for (var fn in comp.methods) {
         // todo ceck type is fn
-        this.methods[fn] = comp.methods[fn](this.dispatch, this.getState);
+        this.methods[fn] = comp.methods[fn](this.getState);
     }
 
     var self = this;
 
     init = function() {
         if (comp.init) {
-            comp.init(self.dispatch, self.getState);
+            comp.init(self.getState);
         }
     }
 
@@ -59,10 +53,9 @@ var Component = function(comp) {
             var str = 'this.methods.' + functionName;
             // console.log('eva ',str)
 
-            var ret = eval( str );
+            state = eval(str);
+            render();
         }
-
-
     }
 
     function bindEvents() {
@@ -77,7 +70,7 @@ var Component = function(comp) {
                     self._eval.call(self, fn);
                    //_eval(fn)
                 } catch(e) {
-                    // console.log('error', e)
+                     console.log('error', e)
                 }
             });
         });
