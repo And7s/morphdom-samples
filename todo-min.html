@@ -13,6 +13,7 @@
 <link rel="stylesheet" type="text/css" href="todo.css">
 <style>
 
+
 </style>
 <body>
 
@@ -22,17 +23,18 @@
 
     <script type="text/javascript">
 
+
         var $app = document.getElementById('app');
 
         var myApp = new Component({
             state: {
                 filter: 'all',
                 tasks: [{
-                    name: 'nana',
+                    name: 'first task',
                     finished: false,
                     editing: false
                 }, {
-                    name: "another task",
+                    name: "second task",
                     finished: true,
                     editing: false
                 }]
@@ -42,16 +44,16 @@
                 var renderTask = function(task, index) {
                     return `
                     <li  ` + (task.editing ? ` class="editing"` : `` ) + `>
-                        <div class="view" data-on-dblclick="editTask(` + index + `)">
+                        <div class="view" data-on-dblclick="editTask(` + task.index + `)">
 
                             <input class="toggle" type="checkbox"
                                 `+ (task.finished ? `checked` : ``)+ `
-                                data-on-change="toggleTaskFinish(` + index +`)">
+                                data-on-change="toggleTaskFinish(` + task.index +`)">
                             <label>` + task.name + `</label>
 
-                            <button class="destroy" data-on-click="clearTask(` + index + `)"></button>
+                            <button class="destroy" data-on-click="clearTask(` + task.index + `)"></button>
                         </div>
-                        <input class="edit" id="input-task-` + index + `" value="` + task.name + `" data-on-change="setTaskName(event, ` + index + `)" data-on-blur="stopEditing()" />
+                        <input class="edit" id="input-task-` + task.index + `" value="` + task.name + `" data-on-change="setTaskName(event, ` + task.index + `)" data-on-blur="stopEditing()" />
                     </li>`
                 };
 
@@ -100,10 +102,13 @@
                 </section>`;
             },
 
-            methods: {
-                createTask: function(getState) {
-                    return function(event) {
+            methods: function(getState) {
+
+                return {
+                    createTask: function(event) {
+                        console.log('create task', event)
                         event.preventDefault();
+
                         var val = event.target.taskName.value;
                         event.target.taskName.value = '';
 
@@ -114,17 +119,13 @@
                             editing: false
                         });
                         return state;
-                    }
-                },
-                toggleTaskFinish: function(getState) {
-                    return function(index) {
+                    },
+                    toggleTaskFinish: function(index) {
                         var state = getState();
                         state.tasks[index].finished = !state.tasks[index].finished;
                         return state;
-                    }
-                },
-                clearCompleted: function(getState) {
-                    return function() {
+                    },
+                    clearCompleted: function() {
                         var state = getState();
                         var newTasks = [];
                         state.tasks.forEach(function(task) {
@@ -134,42 +135,33 @@
                         });
                         state.tasks = newTasks;
                         return state;
-                    }
-                },
-                setFilter: function(getState) {
-                    return function(filter) {
+                    },
+                    setFilter: function(filter) {
                         var state = getState();
                         state.filter = filter;
                         return state;
-                    }
-                },
-                clearTask: function(getState) {
-                    return function(index) {
+                    },
+                    clearTask: function(index) {
                         var state = getState();
                         state.tasks.splice(index, 1);
                         return state;
-                    }
-                },
-                editTask: function(getState) {
-                    return function(index) {
+                    },
+                    editTask: function(index) {
                         var state = getState();
+                        console.log('about to edit task', index);
                         state.tasks[index].editing = true;
                         setTimeout(function() {
                             $('#input-task-' + index).focus();
                         });
                         return state;
-                    }
-                },
-                setTaskName: function(getState) {
-                    return function(event, index) {
+                    },
+                    setTaskName:  function(event, index) {
                         var state = getState();
                         state.tasks[index].name = event.target.value;
                         state.tasks[index].editing = false;
                         return state;
-                    }
-                },
-                stopEditing: function(getState) {
-                    return function() {
+                    },
+                    stopEditing:  function() {
                         var state = getState();
                         state.tasks.forEach(function(task) {
                             task.editing = false;
@@ -193,10 +185,11 @@
                 }
 
                 var filteredTasks = [];
-                state.tasks.forEach(function(task) {
+                state.tasks.forEach(function(task, index) {
                     if ((state.filter == 'pending' && !task.finished) ||
                         (state.filter == 'finished' && task.finished) ||
                         (state.filter != 'pending' && state.filter != 'finished')) {
+                        task.index = index;
                         filteredTasks.push(task);
                     }
                 })
@@ -206,10 +199,7 @@
                 return state;
             }
 
-
         })($app);
-
-
 
     </script>
 

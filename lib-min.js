@@ -14,10 +14,10 @@ var Component = function(comp) {
     };
 
     this.methods = {};
-
-    for (var fn in comp.methods) {
+    var methods = comp.methods(this.getState);
+    for (var fn in methods) {
         // todo ceck type is fn
-        this.methods[fn] = comp.methods[fn](this.getState);
+        this.methods[fn] = methods[fn];
     }
 
     var self = this;
@@ -48,7 +48,7 @@ var Component = function(comp) {
 
         var nameOnly = functionName.substring(0, functionName.indexOf('('));
         console.log('nameOnly', nameOnly);
-
+console.log(this.methods);
         if (typeof this.methods[nameOnly] == 'function') {
             var str = 'this.methods.' + functionName;
             // console.log('eva ',str)
@@ -64,8 +64,11 @@ var Component = function(comp) {
         eventsToListen.forEach(function(eventName) {
             $(_el).on(eventName, '[data-on-' + eventName + ']', function(event) {
                  console.log('event', event);
-                var fn = $(this).data('on-' + eventName);
-                // console.log('attribute', fn);
+                 console.log('target', event.currentTarget.getAttribute('data-on-' + eventName));
+                 console.log('this', $(this));
+                var fn = event.currentTarget.getAttribute('data-on-' + eventName)
+                //$(this).data('on-' + eventName);
+                 console.log('FN', fn);
                 try {
                     self._eval.call(self, fn);
                    //_eval(fn)
