@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en" data-framework="backbonejs">
+    <head>
+        <meta charset="utf-8">
+    </head>
+
+<script type="text/javascript" src="morphdom.js"></script>
+
+<script type="text/javascript" src="lodash.min.js"></script>
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="lib-min.js"></script>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+<style>
+
+
+</style>
+<body>
+<div id="app"></div>
+
+
+    <script type="text/javascript">
+
+
+    var $app = document.getElementById('app');
+      registerComponents('Component', {
+            state: {
+                myProp: 'hello'
+            },
+            render: function(state) {
+              return `
+                <div>I am the component ` + JSON.stringify(state) + ` </div>
+              `
+        },
+        methods: function(getState) {}
+          })
+        var myApp = new Component({
+            state: {
+               count: 10
+            },
+            render: function(state) {
+
+                return `
+                <div>
+                    Hello world Count: ` + state.count + ` <button data-on-click="increment()">increment</button>
+                    <Component></Component>
+                </div>`;
+            },
+
+            methods: function(getState) {
+
+                return {
+                    increment: function() {
+                        var state = getState();
+                        state.count++;
+                        return state;
+                    }
+                }
+            },
+            viewLayer: function(state) {
+
+                return state;
+            }
+
+        })($app);
+
+    </script>
+
+
+</body>
+</html>

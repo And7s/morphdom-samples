@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en" data-framework="backbonejs">
+    <head>
+        <meta charset="utf-8">
+    </head>
+
+<script type="text/javascript" src="morphdom.js"></script>
+
+<script type="text/javascript" src="lodash.min.js"></script>
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="lib-min.js"></script>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+<style>
+
+
+</style>
+<body>
+
+    <script type="text/template" id='tmpl-form'>
+        <form data-on-submit="addShape('<%= attribute.color %>', '<%= attribute.shape %>', '<%= attribute.thickness %>', event)">
+            <div class="form-row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="inputGroupSelect01">Shape</label>
+                        </div>
+                        <select class="custom-select" id="inputGroupSelect01" data-on-change="selectAttribute('shape', event)">
+                            <option value="" <%= attribute.shape == '' ? 'selected' : '' %>>Choose...</option>
+                            <option value="rect" <%= attribute.shape == 'rect' ? 'selected' : '' %>>Rect</option>
+                            <option value="circle" <%= attribute.shape == 'circle' ? 'selected' : '' %>>Circle</option>
+                            <option value="line" <%= attribute.shape == 'line' ? 'selected' : '' %>>Line</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="inputGroupSelect01">Color</label>
+                        </div>
+                        <select class="custom-select" id="inputGroupSelect01"
+                            data-on-change="selectAttribute('color', event)">
+                            <option value="" <%= attribute.color == '' ? 'selected' : '' %>>Choose...</option>
+                            <option value="red" <%= attribute.color == 'red' ? 'selected' : '' %>>Red</option>
+                            <option value="blue" <%= attribute.color == 'blue' ? 'selected' : '' %>>Blue</option>
+                            <option value="purple" <%= attribute.color == 'purple' ? 'selected' : '' %>>purple</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="inputGroupSelect01">Thickness</label>
+                        </div>
+                        <select class="custom-select" id="inputGroupSelect01"
+                            data-on-change="selectAttribute('thickness', event)">
+                            <option value="" <%= attribute.thickness == '' ? 'selected' : '' %>>Choose...</option>
+                            <option value="thin" <%= attribute.thickness == 'thin' ? 'selected' : '' %>>Thin</option>
+                            <option value="regular" <%= attribute.thickness == 'regular' ? 'selected' : '' %>>Regular</option>
+                            <option value="bold" <%= attribute.thickness == 'bold' ? 'selected' : '' %>>bold</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <input type="submit" value="add Shape" class="btn btn-primary btn-block">
+                </div>
+            </div>
+        </form>
+        shape is: <%= attribute.shape %>
+        color is <%= attribute.color %>
+        thickness is <%= attribute.thickness %>
+
+    </script>
+
+
+
+<main role="main">
+
+      <section class="jumbotron text-center">
+        <div class="container">
+          <h1 class="jumbotron-heading">Shape example</h1>
+          <p class="lead text-muted">Add and edit polymorhpism</p>
+          <p>
+            <a href="#" class="btn btn-primary my-2">Main call to action</a>
+            <a href="#" class="btn btn-secondary my-2">Secondary action</a>
+          </p>
+        </div>
+      </section>
+
+      <div class="album py-5 bg-light">
+        <div class="container">
+
+        <div id="app"></div>
+
+            currently selected:
+
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+
+                <div class="card-body">
+                  <p class="card-text">SVG shape description</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&amp;bg=55595c&amp;fg=eceeef&amp;text=Thumbnail" alt="Thumbnail [100%x225]" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22208%22%20height%3D%22225%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20208%20225%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_1657c68ceb1%20text%20%7B%20fill%3A%23eceeef%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A11pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_1657c68ceb1%22%3E%3Crect%20width%3D%22208%22%20height%3D%22225%22%20fill%3D%22%2355595c%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%2266.953125%22%20y%3D%22117.3%22%3EThumbnail%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E" data-holder-rendered="true" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+
+    <script type="text/javascript">
+
+
+        var $app = document.getElementById('app');
+        registerComponents('myForm', {
+            state: {
+                attribute: {
+                    color: 'red',
+                    shape: 'line'
+                }
+            },
+            render: function(state) {
+                var tmpl = _.template(document.getElementById('tmpl-form').innerHTML);
+                return tmpl(state);
+            },
+
+            methods: function(getState) {
+                return {
+                    selectAttribute: function(attribute, event) {
+                        console.log('slect', attribute);
+                        console.log('event', event.target.value);
+                        var value = event.target.value;
+                        var state = getState();
+                        state.attribute[attribute] = value;
+                        return state;
+                    }
+                }
+            }
+        })
+
+        var myApp = new Component({
+            state: {
+                shapes: []
+            },
+            render: function(state) {
+                var tmpl = _.template( `
+                    <div>
+                        This is the app
+                        <myForm></myForm>
+                        <%= JSON.stringify(shapes) %>
+                    </div>
+                `);
+                return tmpl(state);
+            },
+
+            methods: function(getState) {
+                return {
+                    addShape: function(color, shape, thickness, event) {
+                        event.preventDefault();
+                        var state = getState();
+                        state.shapes.push({
+                            color: color,
+                            shape: shape,
+                            thickness: thickness
+                        });
+                        return state;
+                        console.log('its called');
+                    }
+                }
+            }
+
+        })($app);
+
+    </script>
+
+
+</body>
+</html>

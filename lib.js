@@ -35,7 +35,10 @@ var Component = function(comp) {
     }
 
     function render() {
-        state = comp.viewLayer && comp.viewLayer(state);
+        if (typeof comp.viewLayer == 'function') {
+            state = comp.viewLayer(state);
+        }
+        console.log('render ', state);
         morphdom(_el, "<div>" + comp.render(state) + "</div>", morphdomCallbacks);
     }
 
