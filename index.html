@@ -26,7 +26,7 @@
         */
 
 
-        registerComponents('comp3', {
+        registerComponents('parentComponent', {
             state: {
                 count: 0,
                 parentCounter: 0
@@ -36,11 +36,14 @@
                 <p>
                     component life is cool
                     ` + props.count + `
-                    parentCounter: ` + props.parentCounter + `
-                    ` + ((props.count % 2 == 0) ? `COMP4<comp4></comp4>` : `not even`) + `
+                    <br />
                     <button data-on-click="increment(1)">Increment the component</button>
                     <button data-on-click="increment(5)">Increment by 5</button>
                     <button data-on-click="incrementBy100()">Increment by 100</button>
+
+                    parentCounter: ` + props.parentCounter + `
+                    ` + ((props.count % 2 == 0) ? `<br /><childComp></childComp>` : `<br />not even`) + `
+                    
                 </p>
             `},
             init: function(dispatch, getState) {
@@ -67,7 +70,7 @@
 
         
 
-        registerComponents('comp4', {
+        registerComponents('childComp', {
              state: {
                 count: 0,
                 parentCounter: 0
@@ -75,7 +78,7 @@
             render: function(props) { 
                 return `
                 <div>
-                    THIS is comp4
+                    THIS is the child component
                     ` + props.count + `
                     <a href='#' data-on-click="low_level()">increment</a>
                 </div>
@@ -121,7 +124,7 @@
 
 
         registerComponents('myForm', {
-            state: { input: 'bla' },
+            state: { input: 'this is the default form input' },
             render: function(props) {
                 return `
                     <p>
@@ -170,9 +173,9 @@
             render: function() {
                 return `
                     <div><myForm></myForm></div>
-                    <div><comp3></comp3></div>
-                    <div><comp3></comp3></div>
-                    <div><comp3></comp3></div>
+                    <div><parentComponent></parentComponent></div>
+                    <div><parentComponent></parentComponent></div>
+                    <div><parentComponent></parentComponent></div>
                     <div><clock></clock></div>`;
             }
 
