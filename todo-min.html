@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="en" data-framework="backbonejs">
+<html lang="en">
     <head>
         <meta charset="utf-8">
     </head>
 
+<script type="text/javascript" src="lodash.min.js"></script>
 <script type="text/javascript" src="morphdom.js"></script>
 
 
@@ -194,7 +195,6 @@
                     }
                 })
                 state.filteredTasks = filteredTasks;
-                console.log('filter is', state.filter);
                 state.vl = vl;
                 return state;
             }

@@ -93,8 +93,7 @@ var Component = function(comp) {
     };
 
     function render() {
-        console.log('state render', state)
-        var renderState = _.merge(parentState, state);
+        var renderState = _.merge({}, parentState, state);
         if (typeof comp.viewLayer == 'function') {
             renderState = comp.viewLayer(renderState);
         }
@@ -104,22 +103,17 @@ var Component = function(comp) {
 
 
     function setParentState(newState) {
-        console.log('get state', newState);
         parentState = newState;
         render();
     }
 
     this._eval = function(functionName) {
-         //  console.log('called _eval with', this);
-        // console.log('event', event);
 
         var nameOnly = functionName.substring(0, functionName.indexOf('('));
         console.log('nameOnly', nameOnly);
-console.log(this.methods);
+
         if (typeof this.methods[nameOnly] == 'function') {
             var str = 'this.methods.' + functionName;
-            // console.log('eva ',str)
-
             state = eval(str);
             render();
         }
@@ -130,9 +124,9 @@ console.log(this.methods);
 
         eventsToListen.forEach(function(eventName) {
             $(_el).on(eventName, '[data-on-' + eventName + ']', function(event) {
-                 console.log('event', event);
-                 console.log('target', event.currentTarget.getAttribute('data-on-' + eventName));
-                 console.log('this', $(this));
+                console.log('event', event);
+                console.log('target', event.currentTarget.getAttribute('data-on-' + eventName));
+                console.log('this', $(this));
                 var fn = event.currentTarget.getAttribute('data-on-' + eventName)
                 //$(this).data('on-' + eventName);
                  console.log('FN', fn);
@@ -148,8 +142,6 @@ console.log(this.methods);
 
     return function(el) {
         _el = el;
-        // console.log('this', this)
-        // console.log('initialise instance on ', _el);
 
         init();
 
